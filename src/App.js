@@ -1,25 +1,25 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
-
 import React, {Component} from 'react';
-import {StackNavigator} from 'react-navigation';
-import Home from './components/Home';
-import MyNavigation from './components/MyNavigation';
+import { connect } from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {getName, getNavData} from './actions/gpsAction';
+import scenes from "./routes/scenes";
+import {Router} from "react-native-router-flux";
 
-const AppNavigator = StackNavigator({
-    Home: {screen: Home},
-    Details: {screen: MyNavigation}
-});
+class App extends Component {
+	componentWillMount() {
+		this.props.getName();
+		this.props.getNavData();
+	}
 
-export default class App extends Component {
 	render() {
-		return (
-			<AppNavigator />
-		);
+		return (<Router scenes={scenes}/>);
 	}
 }
+
+const mapStateToProps = (state) => ({});
+
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+	getName,
+	getNavData
+},dispatch);
+export default connect(mapStateToProps, mapDispatchToProps)(App);

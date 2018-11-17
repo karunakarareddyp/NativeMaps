@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
 import autobind from 'react-autobind';
 import {View, StyleSheet} from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import {bindActionCreators} from "redux";
+import {getName, getNavData} from "../actions/gpsAction";
 
 /*const Images = [
     { uri: "https://i.imgur.com/sNam9iJ.jpg" },
@@ -72,6 +75,7 @@ class MyNavigation extends Component {
         this.setState({ region });
     }
 	render () {
+	    console.log("Hey ===> ", this.props.navData);
 		return (
 			<View style={styles.container}>
                 <MapView
@@ -102,4 +106,10 @@ const styles = StyleSheet.create({
 MyNavigation.navigationOptions = {
 	title: "Employee Navigation system"
 };
-export default MyNavigation;
+const mapStateToProps = (state) => ({
+    navData: state.main.navData
+});
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+
+},dispatch);
+export default connect(mapStateToProps, mapDispatchToProps)(MyNavigation);

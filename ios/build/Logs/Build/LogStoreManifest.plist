@@ -6,7 +6,7 @@
 	<integer>9</integer>
 	<key>logs</key>
 	<dict>
-		<key>9C4A4A50-43F3-4EDE-9D02-D90EBDCE0FB3</key>
+		<key>5B9B74D2-5275-4125-9EE1-EFC9A851052A</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,9 +15,9 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>9C4A4A50-43F3-4EDE-9D02-D90EBDCE0FB3.xcactivitylog</string>
+			<string>5B9B74D2-5275-4125-9EE1-EFC9A851052A.xcactivitylog</string>
 			<key>highLevelStatus</key>
-			<string>E</string>
+			<string>W</string>
 			<key>schemeIdentifier-containerName</key>
 			<string>NativeMaps project</string>
 			<key>schemeIdentifier-schemeName</key>
@@ -27,15 +27,15 @@
 			<key>signature</key>
 			<string>Building project NativeMaps with scheme NativeMaps and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>563980173.16758502</real>
+			<real>564144477.59526801</real>
 			<key>timeStoppedRecording</key>
-			<real>563980205.305583</real>
+			<real>564144478.94718397</real>
 			<key>title</key>
 			<string>Building project NativeMaps with scheme NativeMaps and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>9C4A4A50-43F3-4EDE-9D02-D90EBDCE0FB3</string>
+			<string>5B9B74D2-5275-4125-9EE1-EFC9A851052A</string>
 		</dict>
-		<key>E0FB9645-778C-438C-A5DD-0B2F19C18EEC</key>
+		<key>9BBE6971-6D98-41F8-A32D-F074CAE5D2F9</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -44,9 +44,9 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>E0FB9645-778C-438C-A5DD-0B2F19C18EEC.xcactivitylog</string>
+			<string>9BBE6971-6D98-41F8-A32D-F074CAE5D2F9.xcactivitylog</string>
 			<key>highLevelStatus</key>
-			<string>E</string>
+			<string>W</string>
 			<key>schemeIdentifier-containerName</key>
 			<string>NativeMaps project</string>
 			<key>schemeIdentifier-schemeName</key>
@@ -56,13 +56,13 @@
 			<key>signature</key>
 			<string>Building project NativeMaps with scheme NativeMaps and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>563907421.13296902</real>
+			<real>564082802.42735302</real>
 			<key>timeStoppedRecording</key>
-			<real>563907477.409073</real>
+			<real>564082803.85944998</real>
 			<key>title</key>
 			<string>Building project NativeMaps with scheme NativeMaps and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>E0FB9645-778C-438C-A5DD-0B2F19C18EEC</string>
+			<string>9BBE6971-6D98-41F8-A32D-F074CAE5D2F9</string>
 		</dict>
 	</dict>
 </dict>

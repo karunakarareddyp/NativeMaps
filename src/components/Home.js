@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
 import {StyleSheet, Text, View} from 'react-native';
+import { Actions } from 'react-native-router-flux';
 
 class Home extends Component {
 	static navigationOptions = {
@@ -10,11 +12,11 @@ class Home extends Component {
 	}
 
 	render(){
-		const { navigate } = this.props.navigation;
+		const { myName } = this.props;
 		return(
 			<View style={styles.layout}>
-				<Text>Click below link to launch Employee Navigation system</Text>
-				<Text style={[styles.text, styles.selectedText]} onPress={() => navigate("Details")}>Launch Map</Text>
+				<Text>Click below link to launch Employee Navigation system - {myName}</Text>
+				<Text style={[styles.text, styles.selectedText]} onPress={() => Actions.navigation()}>Launch Map</Text>
 			</View>
 		);
 	}
@@ -45,4 +47,7 @@ let styles = StyleSheet.compose({
 
 });
 
-export default Home;
+const mapStateToProps = (state) => ({
+    myName: state.main.myName
+});
+export default connect(mapStateToProps) (Home);
