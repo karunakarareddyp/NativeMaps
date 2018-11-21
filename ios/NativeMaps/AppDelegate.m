@@ -9,6 +9,7 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
+#import <GoogleMaps/GoogleMaps.h>
 
 @implementation AppDelegate
 
@@ -17,7 +18,7 @@
   NSURL *jsCodeLocation;
 
   jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-
+  [GMSServices provideAPIKey:@"AIzaSyDBKmSAnW_0oZM0_I5zOo6FQnxIQkBhq5s"];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
                                                       moduleName:@"NativeMaps"
                                                initialProperties:nil

@@ -1,9 +1,9 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import thunk from 'redux-thunk';
-import gpsReducer from './reducers/gpsReducer';
+import mapsReducer from './reducers/mapsReducer';
 
 const reducer = combineReducers({
-    main: gpsReducer,
+    main: mapsReducer,
 });
 
 const getStore = (initialState = {}) => {

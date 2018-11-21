@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
+import {Container} from 'native-base'
 import { Actions } from 'react-native-router-flux';
 
 class Home extends Component {
@@ -14,10 +15,10 @@ class Home extends Component {
 	render(){
 		const { myName } = this.props;
 		return(
-			<View style={styles.layout}>
+			<Container style={styles.layout}>
 				<Text>Click below link to launch Employee Navigation system - {myName}</Text>
 				<Text style={[styles.text, styles.selectedText]} onPress={() => Actions.navigation()}>Launch Map</Text>
-			</View>
+			</Container>
 		);
 	}
 }

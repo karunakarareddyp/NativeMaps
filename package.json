@@ -7,11 +7,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "native-base": "^2.8.1",
     "react": "16.6.0-alpha.8af6728",
     "react-autobind": "^1.0.6",
     "react-native": "0.57.4",
     "react-native-maps": "^0.22.1",
     "react-native-router-flux": "^4.0.6",
+    "react-native-vector-icons": "^6.1.0",
     "react-redux": "^5.1.1",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0"

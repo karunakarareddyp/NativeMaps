@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {getName, getNavData} from './actions/gpsAction';
+import {getCurrentLocation, fetchMarkersData} from './actions/mapsAction';
 import scenes from "./routes/scenes";
 import {Router} from "react-native-router-flux";
 
 class App extends Component {
 	componentWillMount() {
-		this.props.getName();
-		this.props.getNavData();
+		this.props.getCurrentLocation();
+		this.props.fetchMarkersData();
 	}
 
 	render() {
@@ -19,7 +19,7 @@ class App extends Component {
 const mapStateToProps = (state) => ({});
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-	getName,
-	getNavData
+	getCurrentLocation,
+    fetchMarkersData
 },dispatch);
 export default connect(mapStateToProps, mapDispatchToProps)(App);
