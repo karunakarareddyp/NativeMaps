@@ -2,7 +2,7 @@ import {GET_CURRENT_POSTITION, FETCH_MARKERS_DETAILS, RESET, FETCH_SEARCH_FILTER
 
 const initialState = {
     geoPosition: {},
-    navData: [],
+    employeeData: [],
     searchFilterData: []
 };
 
@@ -13,7 +13,7 @@ const ACTION_HANDLERS = {
     }),
     [FETCH_MARKERS_DETAILS]: (state, action) => ({
         ...state,
-        navData: action.payload
+        employeeData: action.payload
     }),
     [FETCH_SEARCH_FILTERS_DATA]: (state, action) => ({
         ...state,

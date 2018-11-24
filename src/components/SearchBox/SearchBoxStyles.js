@@ -3,7 +3,7 @@ import {Dimensions} from 'react-native';
 const {width, height} = Dimensions.get('window');
 const styles = {
     searchBox:{
-        top:80,
+        marginTop:0,
         position:"absolute",
         width:width
     },
@@ -26,7 +26,7 @@ const styles = {
     },
     inputSearch:{
         fontSize:14,
-        height: 30
+        height: 40
     },
     label:{
         fontSize:10,
@@ -37,7 +37,7 @@ const styles = {
     },
 
 
-    ///
+    //
     searchResultsWrapper:{
         top:33,
         position:"absolute",

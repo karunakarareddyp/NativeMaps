@@ -22,12 +22,13 @@ class SearchBox extends Component {
         this.props.onChangeSearch(txt)
     }
 
-    handleSelectedAddress(evt) {
+    handleSelectedAddress(item) {
         this.setState({
             searchOn: false,
             //selectedEmployee: evt.employeeId
         });
-        console.log("Change ====> ", evt);
+        this.props.onSelectEmployee(item);
+        console.log("Change ====> ", item);
     }
     render() {
         const {searchFilterData} = this.props;
@@ -48,21 +49,22 @@ class SearchBox extends Component {
                             <View style={styles.searchResultsWrapper}>
                                 <List
                                     dataArray={searchFilterData}
-                                    renderRow={(item) =>
-                                        <View>
-                                            <ListItem onPress={() => this.handleSelectedAddress(item)} button
-                                                      avatar>
-                                                <Left style={styles.leftContainer}>
-                                                    <Icon name="search" size={15} color="#FF5E3A"/>
-                                                </Left>
-                                                <Body>
-                                                <Text style={styles.primaryText}>{item.employeeId}</Text>
-                                                <Text style={styles.secondaryText}>
-                                                    Lat: {item.latitude}, Long: {item.longitude}
-                                                </Text>
-                                                </Body>
-                                            </ListItem>
-                                        </View>
+                                    renderRow={item =>
+                                        <ListItem key={item.employeeId}
+                                                  onPress={() => this.handleSelectedAddress(item)}
+                                                  // onLongPress={() => this.handleSelectedAddress(item.employeeId)}
+                                                  button={true}
+                                                  avatar>
+                                            <Left style={styles.leftContainer}>
+                                                <Icon name="search" size={15} color="#FF5E3A"/>
+                                            </Left>
+                                            <Body>
+                                            <Text style={styles.primaryText}>{item.employeeId}</Text>
+                                            <Text style={styles.secondaryText}>
+                                                Lat: {item.latitude}, Long: {item.longitude}
+                                            </Text>
+                                            </Body>
+                                        </ListItem>
                                     }
                                 />
                             </View> : null
@@ -77,7 +79,8 @@ class SearchBox extends Component {
 
 SearchBox.propTypes = {
     onChangeSearch: PropTypes.func,
-    searchFilterData: PropTypes.array
+    searchFilterData: PropTypes.array,
+    onSelectEmployee: PropTypes.func,
 };
 
 export default SearchBox;

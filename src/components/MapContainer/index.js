@@ -1,43 +1,35 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import autobind from 'react-autobind';
-import {View, StyleSheet, Dimensions} from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import {bindActionCreators} from "redux";
-import SearchBox from '../SearchBox';
-import {fetchSearchFilterData} from '../../actions/mapsAction';
+import {View, StyleSheet} from 'react-native';
+import MapView, { Marker, Polygon,  Polyline} from 'react-native-maps';
+import {getLatLongWithDeltas, getMarkersWithDelta} from '../../utils';
 
-let filterTimeout;
+//const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 
-class MyNavigation extends Component {
+class MapContainer extends Component {
 	constructor(props) {
 		super(props);
         autobind(this);
 		this.state = {
-		    region: {}
-        }
+            region: this.getLatLong(),
+            polygons: [],
+            holes: [],
+        };
 	}
 
-    getMarkers(){
-        const {navData} = this.props;
+	getMarkers(employeeData){
         let markers;
-        if(navData && navData.length) {
-            markers = navData.map(marker => {
+        if(employeeData && employeeData.length) {
+            markers = employeeData.map(marker => {
                 const coordinate = {latitude: marker.latitude, longitude: marker.longitude};
                 return (<Marker.Animated
                     key={marker.employeeId}
                     coordinate={coordinate}
                     title={marker.employeeId}
                     description={marker.message}
-                    /*animation={
-                        this.state.activeMarker
-                            ? this.state.activeMarker.name === item.venue.name
-                            ? "1"
-                            : "0"
-                            : "0"
-                    }*/
-                />)
-            })
+                />);
+            });
         }
         return markers;
     }
@@ -45,71 +37,84 @@ class MyNavigation extends Component {
     getLatLong() {
         const {geoPosition} = this.props;
         if(geoPosition && geoPosition.coords) {
-            const {coords} = geoPosition;
-            const {latitudeDelta, longitudeDelta} = this.getLatLongDelta();
-            // latitude: 12.971599, longitude: 77.594566
-            return {
-                center: {lat: -33.8688, lng: 151.2195},
-                zoom: 13,
-                latitude: coords.latitude,
-                longitude: coords.longitude,
-                latitudeDelta: latitudeDelta,
-                longitudeDelta: longitudeDelta
-            }
+            return getLatLongWithDeltas(geoPosition.coords)
         }
     }
 
-    getLatLongDelta() {
-	    const {width, height} = Dimensions.get('window');
-	    const ASPECT_RATIO = width / height;
-	    const LATITUDE_DELTA = 3.7922; //0.0922
-	    const LONGITUDE_DELTA = ASPECT_RATIO * LATITUDE_DELTA;
-	    return {latitudeDelta: LATITUDE_DELTA, longitudeDelta: LONGITUDE_DELTA};
+    updateMarker(selectedEmp){
+        return this.getMarkers(selectedEmp);
     }
 
-    onChangeSearch(txt) {
-        console.log(txt);
-        clearTimeout(filterTimeout);
-        filterTimeout = setTimeout(() => {this.props.fetchSearchFilterData(txt);}, 550)
+    onPress(e) {
+        const { creatingZone } = this.props;
+        if(creatingZone) {
+            let polygons = [...this.state.polygons, e.nativeEvent.coordinate];
+            this.setState({
+                polygons
+            });
+        }
     }
 
 	render () {
-        const {geoPosition, searchFilterData} = this.props;
-        console.log("Geo Location => ", geoPosition);
-	    return (
-			<View style={styles.container}>
-                { geoPosition ?
-                    <MapView
-                        provider={MapView.PROVIDER_GOOGLE}
-                        style={styles.map}
-                        region={this.getLatLong()}
-                        // onRegionChange={this.onRegionChange}
-                        >
-                        {
-                            this.getMarkers()
-                        }
-                    </MapView>
-                    : null
-                }
-                <SearchBox onChangeSearch={this.onChangeSearch} searchFilterData={searchFilterData}/>
-			</View>
-		);
+        const { employeeData, selectedEmployee, creatingZone } = this.props;
+        let markers, currentRegion;
+        if(selectedEmployee) {
+            currentRegion = getMarkersWithDelta(selectedEmployee);
+            markers = this.updateMarker(selectedEmployee)
+        } else {
+            currentRegion = this.getLatLong();
+            markers = this.getMarkers(employeeData);
+        }
+        const mapOptions = {
+            scrollEnabled: true,
+        };
+
+        if (creatingZone) {
+            mapOptions.scrollEnabled = false;
+            mapOptions.onPanDrag = e => this.onPress(e);
+        }
+        return (
+            <View style={styles.container}>
+                <MapView
+                    ref={ref => { this.map = ref; }}
+                    provider={MapView.PROVIDER_GOOGLE}
+                    style={styles.map}
+                    region={currentRegion}
+                    loadingEnabled = {true}
+                    //moveOnMarkerPress = {false}
+                    showsUserLocation={true}
+                    showsCompass={true}
+                    onPress={e => this.onPress(e)}
+                    {...mapOptions}
+                    // onRegionChange={this.onRegionChange}
+                    >
+                    {markers}
+                    {this.state.polygons.length ?
+                        <Polygon
+                            key={Math.random()}
+                            coordinates={this.state.polygons}
+                            strokeColor="#F00"
+                            fillColor="rgba(255,0,0,0.5)"
+                            strokeWidth={1}
+                        /> : null
+                    }
+                </MapView>
+            </View>
+        );
 	}
 }
 const styles = StyleSheet.create({
-	container: { ... StyleSheet.absoluteFillObject },
-	map: { ...StyleSheet.absoluteFillObject }
+	container: {
+	    flex: 1,
+	    ... StyleSheet.absoluteFillObject,
+    },
+	map: { ...StyleSheet.absoluteFillObject },
+
 });
 
-MyNavigation.navigationOptions = {
-	title: "Tracking System"
-};
+
 const mapStateToProps = (state) => ({
-    geoPosition: state.main.geoPosition,
-    navData: state.main.navData,
-    searchFilterData: state.main.searchFilterData
+
 });
-const mapDispatchToProps = (dispatch) => bindActionCreators({
-    fetchSearchFilterData
-},dispatch);
-export default connect(mapStateToProps, mapDispatchToProps)(MyNavigation);
+
+export default connect(mapStateToProps)(MapContainer);

@@ -1,5 +1,6 @@
 import {GET_CURRENT_POSTITION, FETCH_MARKERS_DETAILS, RESET, FETCH_SEARCH_FILTERS_DATA} from '../constants';
 const BASE_URL = 'http://localhost:5000'; //192.168.1.120
+// const BASE_URL = 'http://10.0.2.2:5000'; //For Android
 
 export const getCurrentLocation = () => (dispatch) => {
   navigator.geolocation.getCurrentPosition(
