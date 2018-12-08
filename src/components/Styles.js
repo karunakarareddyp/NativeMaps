@@ -1,4 +1,7 @@
-import {StyleSheet} from 'react-native'
+import {Dimensions, StyleSheet} from 'react-native'
+
+const baseColor = '#ff5e3a';
+const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.compose({
     buttonContainer: {
@@ -9,15 +12,17 @@ const styles = StyleSheet.compose({
         //marginVertical: 15,
         backgroundColor: 'transparent',
     },
+
     bubble: {
         backgroundColor: 'rgba(255,253,223,0.7)',
         paddingHorizontal: 18,
         paddingVertical: 12,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#ff5e3a',
+        borderColor: baseColor,
         marginBottom: 10,
     },
+
     button: {
         width: 110,
         paddingHorizontal: 10,
@@ -25,9 +30,38 @@ const styles = StyleSheet.compose({
         marginHorizontal: 10,
 
     },
+
     buttonText: {
         fontWeight: 'bold',
-    }
+    },
+
+    popup: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding:10,
+        margin:30,
+        marginTop: windowHeight/3,
+        borderRadius:10,
+        backgroundColor: 'rgba(223,252,255,0.7)'
+    },
+
+    popupText: {
+        alignSelf: 'flex-start',
+        fontWeight: 'bold',
+        fontSize: 16,
+        color: baseColor,
+        marginBottom: 12,
+    },
+
+    popupInput: {
+        width: 250,
+        marginBottom: 15,
+        padding: 5,
+        height: 40,
+        borderColor: baseColor,
+        borderWidth: 1,
+        borderRadius: 5,
+    },
 });
 
 export default styles;

@@ -13,7 +13,7 @@ const styles = {
         marginTop:10,
         marginBottom:0,
         backgroundColor:'#DFFCFF',
-        opacity:0.9,
+        opacity:0.8,
         borderRadius:7
     },
     secondInputWrapper:{
@@ -36,8 +36,6 @@ const styles = {
         marginBottom:0
     },
 
-
-    //
     searchResultsWrapper:{
         top:33,
         position:"absolute",

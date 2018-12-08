@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import autobind from 'react-autobind';
-import {Text, ScrollView} from 'react-native';
+import {Text} from 'react-native';
 import {View, InputGroup, Input, List, ListItem, Left, Body} from 'native-base';
 import styles from './SearchBoxStyles.js';
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -28,7 +28,6 @@ class SearchBox extends Component {
             //selectedEmployee: evt.employeeId
         });
         this.props.onSelectEmployee(item);
-        console.log("Change ====> ", item);
     }
     render() {
         const {searchFilterData} = this.props;
@@ -37,9 +36,10 @@ class SearchBox extends Component {
             <View style={styles.searchBox}>
                 <View style={styles.inputWrapper}>
                     <InputGroup>
-                        <Icon name="search" size={15} color="green"/>
+                        <Icon name="search" size={15} color="#ff5e3a"/>
                         <Input
                             //onFocus={()=>toggleSearchResultModal("pickUp")}
+                            autoCapitalize="none"
                             style={styles.inputSearch}
                             placeholder="Search using employee ID"
                             onChangeText={ this.onSearchChange }

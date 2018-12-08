@@ -1,16 +1,18 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import autobind from 'react-autobind';
-import {Keyboard, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Keyboard, StyleSheet, Text, TouchableOpacity, View, Alert} from 'react-native';
 import {Container} from 'native-base'
 import {bindActionCreators} from 'redux';
 import MapContainer from './MapContainer';
 import SearchBox from "./SearchBox";
 import FooterContainer from "./common/FooterContainer";
-import {getCurrentLocation, fetchMarkersData, fetchSearchFilterData} from "../actions/mapsAction";
+import {getCurrentLocation, fetchMarkersData, fetchSearchFilterData, storeZoneInfo} from "../actions/mapsAction";
 import styles from './Styles';
+import PopupDialog from "../utils/PopupDialog";
 
 let filterTimeout;
+let zonePolygons;
 
 class Home extends Component {
 	static navigationOptions = {
@@ -24,6 +26,7 @@ class Home extends Component {
             selectedEmployee: undefined,
             viewType: 'home',
             creatingZone: false,
+            displayPopup: false,
         };
 	}
 
@@ -50,19 +53,44 @@ class Home extends Component {
     }
 
     onClickFooterTab(viewType) {
-	    console.log("View Types => ", viewType)
-	    this.setState({viewType})
+	    console.log("View Types => ", viewType);
+        if(this.state.viewType !== viewType) {
+            this.setState({
+                viewType,
+                creatingZone: false,
+            })
+        }
     }
 
     onCreateZone() {
         this.setState({creatingZone: true});
     }
-    onFinishZone() {
-        this.setState({creatingZone: false});
+
+    onClearZone() {
+	    this.setState({creatingZone: false});
     }
+
+    onFinishZone() {
+	    if(zonePolygons && zonePolygons.length > 1) {
+            this.setState({displayPopup: true})
+        }
+    }
+
+    onSubmitZone(zoneName) {
+	    this.setState({
+            creatingZone: false,
+            displayPopup: false,
+        });
+	    this.props.storeZoneInfo(zoneName, zonePolygons);
+    }
+
+    selectedPolygons(polygons) {
+        zonePolygons = polygons;
+    }
+
 	render(){
 	    const {geoPosition, employeeData, searchFilterData} = this.props;
-	    const {viewType, creatingZone, selectedEmployee} = this.state;
+	    const {viewType, creatingZone, selectedEmployee, displayPopup, clearZone} = this.state;
 		return(
 			<Container style={{flex: 1}}>
                 <MapContainer
@@ -70,6 +98,7 @@ class Home extends Component {
                     employeeData={employeeData}
                     selectedEmployee={selectedEmployee}
                     creatingZone={creatingZone}
+                    selectedPolygons={this.selectedPolygons}
                 />
                 <SearchBox
                     onChangeSearch={this.onChangeSearch}
@@ -85,16 +114,24 @@ class Home extends Component {
                                 >
                                     <Text style={styles.buttonText}>Create Zone</Text>
                                 </TouchableOpacity>) :
-                                (<TouchableOpacity
+                                (<View style={{flexDirection: 'row'}}><TouchableOpacity
+                                    onPress={() => this.onClearZone()}
+                                    style={[styles.bubble, styles.button]}
+                                >
+                                    <Text style={styles.buttonText}>Clear Zone</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
                                     onPress={() => this.onFinishZone()}
                                     style={[styles.bubble, styles.button]}
                                 >
-                                    <Text style={styles.buttonText}>Finish Zone</Text>
-                                </TouchableOpacity>)
+                                    <Text style={styles.buttonText}>Save Zone</Text>
+                                </TouchableOpacity></View>)
                             }
 
                         </View>) : null
                 }
+                {displayPopup ? <PopupDialog onSubmitZone={this.onSubmitZone}/> : null}
                 <FooterContainer onClickFooterTab={this.onClickFooterTab}/>
 			</Container>
 		);
@@ -111,7 +148,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => bindActionCreators({
     getCurrentLocation,
     fetchMarkersData,
-    fetchSearchFilterData
+    fetchSearchFilterData,
+    storeZoneInfo,
 },dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps) (Home);

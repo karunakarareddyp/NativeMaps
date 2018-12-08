@@ -2,13 +2,13 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import autobind from 'react-autobind';
 import {View, StyleSheet} from 'react-native';
-import MapView, { Marker, Polygon,  Polyline} from 'react-native-maps';
-import {getLatLongWithDeltas, getMarkersWithDelta} from '../../utils';
+import MapView, { Marker, Polygon } from 'react-native-maps';
+import {getLatLongWithDeltas, getMarkersWithDelta} from '../../utils/util';
 
 //const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 
 class MapContainer extends Component {
-	constructor(props) {
+    constructor(props) {
 		super(props);
         autobind(this);
 		this.state = {
@@ -17,6 +17,12 @@ class MapContainer extends Component {
             holes: [],
         };
 	}
+
+	componentDidUpdate() {
+        if(!this.props.creatingZone && this.state.polygons.length) {
+            this.setState({polygons: []});
+        }
+    }
 
 	getMarkers(employeeData){
         let markers;
@@ -52,6 +58,7 @@ class MapContainer extends Component {
             this.setState({
                 polygons
             });
+            this.props.selectedPolygons(polygons);
         }
     }
 
@@ -70,9 +77,10 @@ class MapContainer extends Component {
         };
 
         if (creatingZone) {
-            mapOptions.scrollEnabled = false;
+            //mapOptions.scrollEnabled = false;
             mapOptions.onPanDrag = e => this.onPress(e);
         }
+
         return (
             <View style={styles.container}>
                 <MapView
@@ -96,6 +104,10 @@ class MapContainer extends Component {
                             strokeColor="#F00"
                             fillColor="rgba(255,0,0,0.5)"
                             strokeWidth={1}
+                            options={{
+                                editable: true,
+                            }}
+                            // onMouseDown={onChangeStart}
                         /> : null
                     }
                 </MapView>

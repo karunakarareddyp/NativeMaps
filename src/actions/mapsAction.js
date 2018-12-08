@@ -56,4 +56,28 @@ export const fetchSearchFilterData = (filterText) => (dispatch) => {
         });
 };
 
+export const storeZoneInfo = (zoneName, coordinates) => (dispatch) => {
+    //const url = 'https://jsonplaceholder.typicode.com/todos/1';
+    const url = BASE_URL + '/api/maps/storeZoneInfo';
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          zoneName: zoneName,
+          coordinates: coordinates
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+        .then(resp => resp.json())
+        .then((data) => {
+            console.log("Successfully store zone data =>", data);
+        })
+        .catch(error => {
+            console.error("OOPS unable to store zone data.", error);
+            const err = {isError: true, error:error };
+            // dispatch({type:STORE_ZONE_DATA, payload: err});
+        });
+};
+
 export const reset = () => ({ type: RESET });
