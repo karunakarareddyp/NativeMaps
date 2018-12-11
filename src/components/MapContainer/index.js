@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import autobind from 'react-autobind';
 import {View, StyleSheet} from 'react-native';
 import MapView, { Marker, Polygon } from 'react-native-maps';
-import {getLatLongWithDeltas, getMarkersWithDelta} from '../../utils/util';
+import {getLatLongWithDeltas, getLatLongDeltaWithObject} from '../../utils/util';
 
 //const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
 
@@ -12,7 +12,7 @@ class MapContainer extends Component {
 		super(props);
         autobind(this);
 		this.state = {
-            region: this.getLatLong(),
+            // region: this.getLatLong(),
             polygons: [],
             holes: [],
         };
@@ -24,26 +24,34 @@ class MapContainer extends Component {
         }
     }
 
-	getMarkers(employeeData){
+    getMarkers(markersData){
         let markers;
-        if(employeeData && employeeData.length) {
-            markers = employeeData.map(marker => {
-                const coordinate = {latitude: marker.latitude, longitude: marker.longitude};
+        if(markersData && markersData.length) {
+            markers = markersData.map(marker => {
+                const coordinate = {latitude: Number(marker.latitude), longitude: Number(marker.longitude)};
                 return (<Marker.Animated
-                    key={marker.employeeId}
+                    key={marker.deviceId}
                     coordinate={coordinate}
-                    title={marker.employeeId}
-                    description={marker.message}
+                    title={marker.deviceId}
+                    description={marker.deviceId}
                 />);
             });
         }
         return markers;
     }
 
-    getLatLong() {
-        const {geoPosition} = this.props;
+    getCurrentPosition() {
+        const {zonesData, geoPosition} = this.props;
+        if(zonesData && zonesData.length) {
+            const plainPoints = JSON.parse(zonesData[0].plainPoints);
+            if(plainPoints && plainPoints.length) {
+                // const point = plainPoints[Math.floor(plainPoints.length/2)];
+                //return getLatLongWithDeltas({latitude:point[0], longitude:point[1]})
+                return getLatLongWithDeltas(plainPoints);
+            }
+        }
         if(geoPosition && geoPosition.coords) {
-            return getLatLongWithDeltas(geoPosition.coords)
+            return getLatLongDeltaWithObject([geoPosition.coords])
         }
     }
 
@@ -62,15 +70,55 @@ class MapContainer extends Component {
         }
     }
 
+    getZonesLatLng(points) {
+        if(points && points.length) {
+            return points.map(point => {
+                return {latitude:point[0], longitude:point[1]}
+            });
+        }
+    }
+
+    drawPolygon() {
+        const {zonesData, creatingZone} = this.props;
+        const {polygons} = this.state;
+        if(!creatingZone && zonesData && zonesData.length) {
+            const zoneInfo = zonesData[0];
+            return (<Polygon
+                key={zoneInfo.name}
+                coordinates={this.getZonesLatLng(JSON.parse(zoneInfo.plainPoints))}
+                strokeColor="#F00"
+                fillColor={zoneInfo.color}
+                strokeWidth={1}
+                options={{
+                    editable: true,
+                }}
+            />)
+        }
+        if(creatingZone && polygons.length > 2) {
+            return (<Polygon
+                key={Math.random()}
+                coordinates={polygons}
+                strokeColor="#F00"
+                fillColor="rgba(0,128,0,0.5)"
+                strokeWidth={1}
+                options={{
+                    editable: true,
+                }}
+                // onMouseDown={onChangeStart}
+            />)
+        }
+        return null;
+    }
+
 	render () {
-        const { employeeData, selectedEmployee, creatingZone } = this.props;
+        const { markersData, selectedMarker, creatingZone } = this.props;
         let markers, currentRegion;
-        if(selectedEmployee) {
-            currentRegion = getMarkersWithDelta(selectedEmployee);
-            markers = this.updateMarker(selectedEmployee)
+        if(selectedMarker) {
+            currentRegion = getLatLongDeltaWithObject(selectedMarker);
+            markers = this.updateMarker(selectedMarker)
         } else {
-            currentRegion = this.getLatLong();
-            markers = this.getMarkers(employeeData);
+            currentRegion = this.getCurrentPosition();
+            markers = this.getMarkers(markersData);
         }
         const mapOptions = {
             scrollEnabled: true,
@@ -97,19 +145,7 @@ class MapContainer extends Component {
                     // onRegionChange={this.onRegionChange}
                     >
                     {markers}
-                    {this.state.polygons.length ?
-                        <Polygon
-                            key={Math.random()}
-                            coordinates={this.state.polygons}
-                            strokeColor="#F00"
-                            fillColor="rgba(255,0,0,0.5)"
-                            strokeWidth={1}
-                            options={{
-                                editable: true,
-                            }}
-                            // onMouseDown={onChangeStart}
-                        /> : null
-                    }
+                    {this.drawPolygon()}
                 </MapView>
             </View>
         );

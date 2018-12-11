@@ -7,7 +7,7 @@ import {bindActionCreators} from 'redux';
 import MapContainer from './MapContainer';
 import SearchBox from "./SearchBox";
 import FooterContainer from "./common/FooterContainer";
-import {getCurrentLocation, fetchMarkersData, fetchSearchFilterData, storeZoneInfo} from "../actions/mapsAction";
+import {getCurrentLocation, fetchZones, fetchMarkersData, fetchSearchFilterData, storeZoneInfo} from "../actions/mapsAction";
 import styles from './Styles';
 import PopupDialog from "../utils/PopupDialog";
 
@@ -23,7 +23,7 @@ class Home extends Component {
 	    super(props);
         autobind(this);
         this.state = {
-            selectedEmployee: undefined,
+            selectedMarker: undefined,
             viewType: 'home',
             creatingZone: false,
             displayPopup: false,
@@ -31,14 +31,20 @@ class Home extends Component {
 	}
 
     componentWillMount() {
-        this.props.getCurrentLocation();
+        this.props.fetchZones(true);
+        // this.props.getCurrentLocation();
         this.props.fetchMarkersData();
+        this.handleMarkersData();
+    }
+
+    handleMarkersData(){
+	    setInterval(() => {this.props.fetchMarkersData()}, 10000); //Fetch every 10 seconds once
     }
 
     onChangeSearch(txt) {
         console.log(txt);
         if(txt.length === 0) {
-            this.setState({selectedEmployee: undefined});
+            this.setState({selectedMarker: undefined});
         }
         clearTimeout(filterTimeout);
         filterTimeout = setTimeout(() => {this.props.fetchSearchFilterData(txt);}, 550)
@@ -48,7 +54,7 @@ class Home extends Component {
         Keyboard.dismiss();
         this.setState({
             //region: this.regionContainingPoints([selectedItem]),
-            selectedEmployee: [selectedItem],
+            selectedMarker: [selectedItem],
         });
     }
 
@@ -89,14 +95,15 @@ class Home extends Component {
     }
 
 	render(){
-	    const {geoPosition, employeeData, searchFilterData} = this.props;
-	    const {viewType, creatingZone, selectedEmployee, displayPopup, clearZone} = this.state;
+	    const {geoPosition, zonesData, markersData, searchFilterData} = this.props;
+	    const {viewType, creatingZone, selectedMarker, displayPopup} = this.state;
 		return(
 			<Container style={{flex: 1}}>
                 <MapContainer
                     geoPosition={geoPosition}
-                    employeeData={employeeData}
-                    selectedEmployee={selectedEmployee}
+                    zonesData={zonesData}
+                    markersData={markersData}
+                    selectedMarker={selectedMarker}
                     creatingZone={creatingZone}
                     selectedPolygons={this.selectedPolygons}
                 />
@@ -141,12 +148,14 @@ class Home extends Component {
 
 const mapStateToProps = (state) => ({
     geoPosition: state.main.geoPosition,
-    employeeData: state.main.employeeData,
+    zonesData: state.main.zonesData,
+    markersData: state.main.markersData,
     searchFilterData: state.main.searchFilterData
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
     getCurrentLocation,
+    fetchZones,
     fetchMarkersData,
     fetchSearchFilterData,
     storeZoneInfo,

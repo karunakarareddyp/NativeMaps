@@ -12,7 +12,7 @@ class SearchBox extends Component {
         autobind(this);
         this.state = {
             searchOn: false,
-            //selectedEmployee: null,
+            //selectedMarker: null,
         };
     }
 
@@ -25,7 +25,7 @@ class SearchBox extends Component {
     handleSelectedAddress(item) {
         this.setState({
             searchOn: false,
-            //selectedEmployee: evt.employeeId
+            //selectedMarker: evt.employeeId
         });
         this.props.onSelectEmployee(item);
     }
@@ -43,7 +43,7 @@ class SearchBox extends Component {
                             style={styles.inputSearch}
                             placeholder="Search using employee ID"
                             onChangeText={ this.onSearchChange }
-                            //value={selectedEmployee}
+                            //value={selectedMarker}
                         />
                         {searchOn && searchFilterData && searchFilterData.length ?
                             <View style={styles.searchResultsWrapper}>

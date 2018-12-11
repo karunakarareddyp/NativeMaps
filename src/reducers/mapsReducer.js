@@ -1,9 +1,16 @@
-import {GET_CURRENT_POSTITION, FETCH_MARKERS_DETAILS, RESET, FETCH_SEARCH_FILTERS_DATA} from '../constants';
+import {
+    GET_CURRENT_POSTITION,
+    FETCH_ZONES,
+    FETCH_MARKERS_DETAILS,
+    FETCH_SEARCH_FILTERS_DATA,
+    RESET,
+} from '../constants';
 
 const initialState = {
     geoPosition: {},
-    employeeData: [],
-    searchFilterData: []
+    zonesData: [],
+    markersData: [],
+    searchFilterData: [],
 };
 
 const ACTION_HANDLERS = {
@@ -11,9 +18,13 @@ const ACTION_HANDLERS = {
         ...state,
         geoPosition: action.payload
     }),
+    [FETCH_ZONES]: (state, action) => ({
+        ...state,
+        zonesData: action.payload
+    }),
     [FETCH_MARKERS_DETAILS]: (state, action) => ({
         ...state,
-        employeeData: action.payload
+        markersData: action.payload
     }),
     [FETCH_SEARCH_FILTERS_DATA]: (state, action) => ({
         ...state,
