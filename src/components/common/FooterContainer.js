@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, {PureComponent} from "react";
 import autobind from 'react-autobind';
 import { Text, StyleSheet } from "react-native";
 import { Footer, FooterTab, Button} from "native-base";
@@ -25,12 +25,12 @@ const tabs = [
     },
     {
         title:"History",
-        icon:"info",
+        icon:"activity",
         id: 'history'
     }
 ];
 
-class FooterContainer extends Component {
+class FooterContainer extends PureComponent {
 
     constructor(props) {
         super(props);

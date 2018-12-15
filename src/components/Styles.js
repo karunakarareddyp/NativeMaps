@@ -42,7 +42,7 @@ const styles = StyleSheet.compose({
         margin:30,
         marginTop: windowHeight/3,
         borderRadius:10,
-        backgroundColor: 'rgba(223,252,255,0.7)'
+        backgroundColor: 'rgba(223,252,255,0.9)'
     },
 
     popupText: {

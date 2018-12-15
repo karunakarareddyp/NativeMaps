@@ -17,9 +17,11 @@ const getLatLongDeltaWithPlainArray = (coords) => {
 };
 
 export const getLatLongDeltaWithObject = (coords) => {
-    let x = coords.map(c => c.latitude);
-    let y = coords.map(c => c.longitude);
-    return getLatLngWithDeltas(x, y);
+    if(coords) {
+        let x = coords.map(c => c.latitude);
+        let y = coords.map(c => c.longitude);
+        return getLatLngWithDeltas(x, y);
+    }
 };
 
 const getLatLngWithDeltas = (x, y) => {

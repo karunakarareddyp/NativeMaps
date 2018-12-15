@@ -1,5 +1,4 @@
 import {
-    GET_CURRENT_POSTITION,
     FETCH_ZONES,
     FETCH_MARKERS_DETAILS,
     FETCH_SEARCH_FILTERS_DATA,
@@ -7,24 +6,24 @@ import {
 } from '../constants';
 
 const initialState = {
-    geoPosition: {},
+    // geoPosition: {},
     zonesData: [],
     markersData: [],
     searchFilterData: [],
 };
 
 const ACTION_HANDLERS = {
-    [GET_CURRENT_POSTITION]: (state, action) => ({
+    /*[GET_CURRENT_POSTITION]: (state, action) => ({
         ...state,
         geoPosition: action.payload
-    }),
+    }),*/
     [FETCH_ZONES]: (state, action) => ({
         ...state,
         zonesData: action.payload
     }),
     [FETCH_MARKERS_DETAILS]: (state, action) => ({
         ...state,
-        markersData: action.payload
+        markersData: JSON.stringify(state.markersData) !== JSON.stringify(action.markersData) ? action.markersData : state.markersData
     }),
     [FETCH_SEARCH_FILTERS_DATA]: (state, action) => ({
         ...state,

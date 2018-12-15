@@ -5,7 +5,15 @@ const config = require('./db');
 
 const maps = require('./routes/maps');
 
-mongoose.connect(config.DB, { useNewUrlParser: true }).then(
+//mongoose.connect(config.DB, { useNewUrlParser: true }).then(
+mongoose.connect(config.DB,
+    {
+        auth: {
+            user:'gpsdevadmin',
+            password: 'Admin@2018'
+        },
+        useNewUrlParser: true
+    }).then(
     () => { console.log('Successfully connected to Database'); },
     (err) => { console.log(`Can not connect to the database ${err}`); },
 );
@@ -28,3 +36,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+

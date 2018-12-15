@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import autobind from 'react-autobind';
 import {Text} from 'react-native';
@@ -6,51 +6,54 @@ import {View, InputGroup, Input, List, ListItem, Left, Body} from 'native-base';
 import styles from './SearchBoxStyles.js';
 import Icon from "react-native-vector-icons/FontAwesome";
 
-class SearchBox extends Component {
+class SearchBox extends PureComponent {
     constructor(props) {
         super(props);
         autobind(this);
         this.state = {
             searchOn: false,
-            //selectedMarker: null,
+            selectedObject: '',
         };
     }
 
     onSearchChange(txt) {
         //const filterList = this.state.ds.filter(data => data.name.toLowerCase().indexOf(txt.toLowerCase()) > -1);
-        this.setState({searchOn: txt.length > 0});
+        this.setState({
+            selectedObject: txt,
+            searchOn: txt.length > 0
+        });
         this.props.onChangeSearch(txt)
     }
 
     handleSelectedAddress(item) {
         this.setState({
             searchOn: false,
-            //selectedMarker: evt.employeeId
+            selectedObject: `${item.lastName} ${item.firstName}`
         });
         this.props.onSelectEmployee(item);
     }
     render() {
         const {searchFilterData} = this.props;
-        const {searchOn} = this.state;
+        const {searchOn, selectedObject} = this.state;
         return (
             <View style={styles.searchBox}>
                 <View style={styles.inputWrapper}>
                     <InputGroup>
                         <Icon name="search" size={15} color="#ff5e3a"/>
                         <Input
-                            //onFocus={()=>toggleSearchResultModal("pickUp")}
                             autoCapitalize="none"
                             style={styles.inputSearch}
-                            placeholder="Search using employee ID"
+                            placeholder="Search with employee name"
                             onChangeText={ this.onSearchChange }
-                            //value={selectedMarker}
+                            value={selectedObject}
+                            multiline={true}
                         />
                         {searchOn && searchFilterData && searchFilterData.length ?
                             <View style={styles.searchResultsWrapper}>
                                 <List
                                     dataArray={searchFilterData}
                                     renderRow={item =>
-                                        <ListItem key={item.employeeId}
+                                        <ListItem key={item.deviceId}
                                                   onPress={() => this.handleSelectedAddress(item)}
                                                   // onLongPress={() => this.handleSelectedAddress(item.employeeId)}
                                                   button={true}
@@ -59,10 +62,13 @@ class SearchBox extends Component {
                                                 <Icon name="search" size={15} color="#FF5E3A"/>
                                             </Left>
                                             <Body>
-                                            <Text style={styles.primaryText}>{item.employeeId}</Text>
+                                            <Text style={styles.primaryText}>{item.lastName} {item.firstName}</Text>
                                             <Text style={styles.secondaryText}>
-                                                Lat: {item.latitude}, Long: {item.longitude}
+                                                Device ID - {item.deviceId}
                                             </Text>
+                                            {/*<Text style={styles.secondaryText}>
+                                                Lat: {item.latitude}, Long: {item.longitude}
+                                            </Text>*/}
                                             </Body>
                                         </ListItem>
                                     }

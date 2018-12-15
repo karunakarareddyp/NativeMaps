@@ -1,22 +1,29 @@
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import autobind from 'react-autobind';
 import {View, StyleSheet} from 'react-native';
+import {bindActionCreators} from 'redux';
 import MapView, { Marker, Polygon } from 'react-native-maps';
 import {getLatLongWithDeltas, getLatLongDeltaWithObject} from '../../utils/util';
+import {fetchMarkersData, fetchZones} from '../../actions/mapsAction';
 
-//const DEFAULT_PADDING = { top: 40, right: 40, bottom: 40, left: 40 };
-
-class MapContainer extends Component {
+class MapContainer extends PureComponent {
     constructor(props) {
 		super(props);
         autobind(this);
 		this.state = {
-            // region: this.getLatLong(),
+            region: undefined,
+            //markersData: [],
             polygons: [],
-            holes: [],
         };
 	}
+
+	componentWillMount(){
+        this.props.fetchZones(true);
+        this.props.fetchMarkersData();
+        this.handleMarkersData();
+    }
 
 	componentDidUpdate() {
         if(!this.props.creatingZone && this.state.polygons.length) {
@@ -24,39 +31,25 @@ class MapContainer extends Component {
         }
     }
 
-    getMarkers(markersData){
-        let markers;
-        if(markersData && markersData.length) {
-            markers = markersData.map(marker => {
-                const coordinate = {latitude: Number(marker.latitude), longitude: Number(marker.longitude)};
-                return (<Marker.Animated
-                    key={marker.deviceId}
-                    coordinate={coordinate}
-                    title={marker.deviceId}
-                    description={marker.deviceId}
-                />);
-            });
-        }
-        return markers;
+    handleMarkersData(){
+        setInterval(() => {
+            this.props.fetchMarkersData(this.props.selectedDevice)
+        }, 10000); //Fetch every 10 seconds once
     }
 
     getCurrentPosition() {
-        const {zonesData, geoPosition} = this.props;
+        const { zonesData } = this.props;
         if(zonesData && zonesData.length) {
             const plainPoints = JSON.parse(zonesData[0].plainPoints);
             if(plainPoints && plainPoints.length) {
-                // const point = plainPoints[Math.floor(plainPoints.length/2)];
-                //return getLatLongWithDeltas({latitude:point[0], longitude:point[1]})
                 return getLatLongWithDeltas(plainPoints);
             }
         }
+
+        const { geoPosition } = this.props;
         if(geoPosition && geoPosition.coords) {
             return getLatLongDeltaWithObject([geoPosition.coords])
         }
-    }
-
-    updateMarker(selectedEmp){
-        return this.getMarkers(selectedEmp);
     }
 
     onPress(e) {
@@ -78,11 +71,20 @@ class MapContainer extends Component {
         }
     }
 
-    drawPolygon() {
-        const {zonesData, creatingZone} = this.props;
-        const {polygons} = this.state;
-        if(!creatingZone && zonesData && zonesData.length) {
+    getRegion() {
+        const { selectedDevice, markersData } = this.props;
+        console.log(" selectedDevice =>", selectedDevice);
+        if(selectedDevice && markersData && markersData.length === 1) {
+            return getLatLongDeltaWithObject(markersData);
+        }
+        return this.getCurrentPosition();
+    }
+
+    drawSystemZones() {
+        const {zonesData} = this.props;
+        if( zonesData && zonesData.length) {
             const zoneInfo = zonesData[0];
+            // console.log('zones info => ', zoneInfo);
             return (<Polygon
                 key={zoneInfo.name}
                 coordinates={this.getZonesLatLng(JSON.parse(zoneInfo.plainPoints))}
@@ -94,6 +96,10 @@ class MapContainer extends Component {
                 }}
             />)
         }
+    }
+
+    drawPolygon(creatingZone) {
+        const {polygons} = this.state;
         if(creatingZone && polygons.length > 2) {
             return (<Polygon
                 key={Math.random()}
@@ -104,22 +110,30 @@ class MapContainer extends Component {
                 options={{
                     editable: true,
                 }}
-                // onMouseDown={onChangeStart}
             />)
         }
         return null;
     }
 
-	render () {
-        const { markersData, selectedMarker, creatingZone } = this.props;
-        let markers, currentRegion;
-        if(selectedMarker) {
-            currentRegion = getLatLongDeltaWithObject(selectedMarker);
-            markers = this.updateMarker(selectedMarker)
-        } else {
-            currentRegion = this.getCurrentPosition();
-            markers = this.getMarkers(markersData);
+    drawMarkers() {
+        const { markersData } = this.props;
+        let markers;
+        if(markersData && markersData.length) {
+            markers = markersData.map(marker => {
+                const coordinate = {latitude: Number(marker.latitude), longitude: Number(marker.longitude)};
+                return (<Marker.Animated
+                    key={marker.deviceId}
+                    coordinate={coordinate}
+                    title="Device Id"
+                    description={marker.deviceId}
+                />);
+            });
         }
+        return markers;
+    }
+
+	render () {
+        const { creatingZone } = this.props;
         const mapOptions = {
             scrollEnabled: true,
         };
@@ -135,7 +149,7 @@ class MapContainer extends Component {
                     ref={ref => { this.map = ref; }}
                     provider={MapView.PROVIDER_GOOGLE}
                     style={styles.map}
-                    region={currentRegion}
+                    region={this.getRegion()}
                     loadingEnabled = {true}
                     //moveOnMarkerPress = {false}
                     showsUserLocation={true}
@@ -144,8 +158,9 @@ class MapContainer extends Component {
                     {...mapOptions}
                     // onRegionChange={this.onRegionChange}
                     >
-                    {markers}
-                    {this.drawPolygon()}
+                    {this.drawSystemZones()}
+                    {this.drawMarkers()}
+                    {this.drawPolygon(creatingZone)}
                 </MapView>
             </View>
         );
@@ -157,12 +172,29 @@ const styles = StyleSheet.create({
 	    ... StyleSheet.absoluteFillObject,
     },
 	map: { ...StyleSheet.absoluteFillObject },
-
 });
 
+MapContainer.defaultProps = {
+    zonesData: [],
+    markersData: [],
+    selectedDevice: undefined
+};
+
+MapContainer.propTypes = {
+    markersData: PropTypes.array,
+    zonesData: PropTypes.array,
+    selectedDevice: PropTypes.number,
+    fetchZones: PropTypes.func.isRequired,
+    fetchMarkersData: PropTypes.func.isRequired,
+};
 
 const mapStateToProps = (state) => ({
-
+    zonesData: state.main.zonesData,
+    markersData: state.main.markersData,
 });
 
-export default connect(mapStateToProps)(MapContainer);
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+    fetchZones,
+    fetchMarkersData,
+}, dispatch);
+export default connect(mapStateToProps, mapDispatchToProps)(MapContainer);

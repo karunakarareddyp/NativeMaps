@@ -11,11 +11,12 @@ router.get('/me', (req, res) => res.json({
 }));
 
 router.get('/getMarkers', (req, res) => {
+    const deviceId = req.query.deviceId;
     model.Markers.aggregate([
         {"$sort": {"pingtime": -1}},
         { "$group": {
                 "_id": {
-                    "deviceId": "$deviceId",
+                    "deviceId": deviceId ? deviceId : "$deviceId",
                 },
                 "deviceId": { "$first": "$deviceId"},
                 "pingtime": { "$first": "$pingtime" },
@@ -40,11 +41,17 @@ router.get('/getAlerts', (req, res) => {
 router.get('/getSearchFilterData', (req, res) => {
     const txt = req.query.filter;
     console.log("Search Query ", txt);
-    model.Alerts.find({employeeId: new RegExp(txt, 'i')}, (err, alerts) => { // i - indicates case in-sensitive
-        if (err) res.send(err);
-        console.log('Filter Data =>', alerts);
-        res.send(alerts);
-    });
+    const reg = new RegExp(txt, 'i');
+    model.Users.find({
+        '$or': [
+            { 'firstName': reg },
+            { 'lastName': reg }
+        ]},
+        (err, users) => { // i - indicates case in-sensitive
+            if (err) res.send(err);
+            console.log('Filter Users Data =>', users);
+            res.send(users);
+        });
 });
 
 router.get('/getZones', (req, res) => {

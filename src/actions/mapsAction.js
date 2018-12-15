@@ -8,18 +8,6 @@ import {
 const BASE_URL = 'http://localhost:5000'; //192.168.1.120
 // const BASE_URL = 'http://10.0.2.2:5000'; //For Android
 
-export const getCurrentLocation = () => (dispatch) => {
-  navigator.geolocation.getCurrentPosition(
-      (position) => {
-          dispatch({type:GET_CURRENT_POSTITION, payload: position});
-      },
-      (error) => {
-          console.log("Unable to fetch Geo Location.", error);
-      },
-      {enableHighAccuracy: true, timeout:30000, maximumAge: 1000}
-  )
-};
-
 export const fetchZones = (onlyFirstRecord) => (dispatch) => {
     let url = `${BASE_URL}/api/maps/getZones`;
     if(onlyFirstRecord) {
@@ -43,9 +31,12 @@ export const fetchZones = (onlyFirstRecord) => (dispatch) => {
         });
 };
 
-export const fetchMarkersData = () => (dispatch) => {
-    //const url = 'https://jsonplaceholder.typicode.com/todos/1';
-    const url = `${BASE_URL}/api/maps/getMarkers`;
+export const fetchMarkersData = (deviceId) => (dispatch) => {
+    //const url = 'https://jsonplaceholder.typicode.com/todos/1';\
+    let url = `${BASE_URL}/api/maps/getMarkers`;
+    if(deviceId) {
+        url += '?deviceId='+deviceId;
+    }
     fetch(url, {
         method: 'GET',
         headers: {
@@ -54,11 +45,11 @@ export const fetchMarkersData = () => (dispatch) => {
     })
         .then(resp => resp.json())
         .then((data) => {
-            console.log("Data Received from MongoDB =>", data);
-            dispatch({type:FETCH_MARKERS_DETAILS, payload: data});
+            console.log("Data Received Markers Data =>", data);
+            dispatch({type:FETCH_MARKERS_DETAILS, markersData: data});
         })
         .catch(error => {
-            console.error("OOPS unable to fetch data.", error);
+            console.error("OOPS unable to fetch Marhers data.", error);
             const err = {isError: true, error:error };
             dispatch({type:FETCH_MARKERS_DETAILS, payload: err});
         });
@@ -75,7 +66,7 @@ export const fetchSearchFilterData = (filterText) => (dispatch) => {
     })
         .then(resp => resp.json())
         .then((data) => {
-            console.log("Data Received from MongoDB =>", data);
+            console.log("Data Received for fetchSearchFilterData =>", data);
             dispatch({type:FETCH_SEARCH_FILTERS_DATA, payload: data});
         })
         .catch(error => {
@@ -109,4 +100,17 @@ export const storeZoneInfo = (zoneName, coordinates) => (dispatch) => {
         });
 };
 
+/*
+export const getCurrentLocation = () => (dispatch) => {
+  navigator.geolocation.getCurrentPosition(
+      (position) => {
+          dispatch({type:GET_CURRENT_POSTITION, payload: position});
+      },
+      (error) => {
+          console.log("Unable to fetch Geo Location.", error);
+      },
+      {enableHighAccuracy: true, timeout:30000, maximumAge: 1000}
+  )
+};
+ */
 export const reset = () => ({ type: RESET });

@@ -3,7 +3,6 @@ import {Dimensions} from 'react-native';
 const {width, height} = Dimensions.get('window');
 const styles = {
     searchBox:{
-        marginTop:0,
         position:"absolute",
         width:width
     },
@@ -14,14 +13,6 @@ const styles = {
         marginBottom:0,
         backgroundColor:'#DFFCFF',
         opacity:0.8,
-        borderRadius:7
-    },
-    secondInputWrapper:{
-        marginLeft:15,
-        marginRight:10,
-        marginTop:0,
-        backgroundColor:"#fff",
-        opacity:0.9,
         borderRadius:7
     },
     inputSearch:{
@@ -37,10 +28,10 @@ const styles = {
     },
 
     searchResultsWrapper:{
-        top:33,
+        top:40,
         position:"absolute",
         width:width,
-        height:height/2,
+        height:height/2.5,
         backgroundColor:"#fff",
         opacity:0.9,
         scroll: 'auto'
