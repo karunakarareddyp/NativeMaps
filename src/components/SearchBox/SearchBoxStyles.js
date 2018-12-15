@@ -16,7 +16,7 @@ const styles = {
         borderRadius:7
     },
     inputSearch:{
-        fontSize:14,
+        fontSize:17,
         height: 40
     },
     label:{

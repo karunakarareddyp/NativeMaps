@@ -10,13 +10,13 @@ const tabs = [
     {
         title:"Home",
         icon:"home",
-        color: '#FF5E3A',
         id: 'home',
     },
     {
         title:"Alerts",
         icon:"alert-triangle", //alert-circle
-        id: 'alerts'
+        id: 'alerts',
+        notes: 120
     },
     {
         title:"Zones",
@@ -53,11 +53,15 @@ class FooterContainer extends PureComponent {
                         tabs.map((obj, index) => {
                             return (
                                 <Button key={obj.title} onPress={() => this.onClickFooterTab(obj.id, index)}>
-                                    <Icon size={22} name={obj.icon} color={index === selectedIndex ? '#FF5E3A' : "grey"}/>
+                                    <Icon size={22} name={obj.icon} color={index === selectedIndex ? 'orange' : obj.notes ? "red" : "grey"}/>
                                     <Text style={{
                                         fontSize: 12,
-                                        color: (index === selectedIndex) ? "#FF5E3A" : "white"
-                                    }}>{obj.title}</Text>
+                                        fontWeight: 'bold',
+                                        color: (index === selectedIndex) ? "orange" : "white"
+                                    }}>{obj.title}
+                                        {obj.notes ? ` (${obj.notes})` : null}
+                                    </Text>
+
                                 </Button>
                             )
                         })

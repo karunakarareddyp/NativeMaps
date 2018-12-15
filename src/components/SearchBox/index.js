@@ -39,14 +39,14 @@ class SearchBox extends PureComponent {
             <View style={styles.searchBox}>
                 <View style={styles.inputWrapper}>
                     <InputGroup>
-                        <Icon name="search" size={15} color="#ff5e3a"/>
+                        <Icon name="search" size={15} color="orange"/>
                         <Input
                             autoCapitalize="none"
                             style={styles.inputSearch}
                             placeholder="Search with employee name"
                             onChangeText={ this.onSearchChange }
                             value={selectedObject}
-                            multiline={true}
+                            // multiline={true}
                         />
                         {searchOn && searchFilterData && searchFilterData.length ?
                             <View style={styles.searchResultsWrapper}>
@@ -59,7 +59,7 @@ class SearchBox extends PureComponent {
                                                   button={true}
                                                   avatar>
                                             <Left style={styles.leftContainer}>
-                                                <Icon name="search" size={15} color="#FF5E3A"/>
+                                                <Icon name="search" size={15} color="orange"/>
                                             </Left>
                                             <Body>
                                             <Text style={styles.primaryText}>{item.lastName} {item.firstName}</Text>

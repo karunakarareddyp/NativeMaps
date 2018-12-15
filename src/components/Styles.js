@@ -1,6 +1,6 @@
 import {Dimensions, StyleSheet} from 'react-native'
 
-const baseColor = '#ff5e3a';
+const baseColor = 'orange'; //'#ff5e3a';
 const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.compose({
