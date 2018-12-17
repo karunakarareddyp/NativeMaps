@@ -6,7 +6,7 @@ const windowHeight = Dimensions.get('window').height;
 const styles = StyleSheet.compose({
     buttonContainer: {
         alignSelf: "flex-end",
-        bottom: 80,
+        bottom: 60,
         position: 'absolute',
         //flexDirection: 'row',
         //marginVertical: 15,
@@ -62,6 +62,18 @@ const styles = StyleSheet.compose({
         borderWidth: 1,
         borderRadius: 5,
     },
+
+    historyInfo: {
+        alignSelf: 'center',
+        bottom: 70,
+        position: 'absolute',
+        backgroundColor: 'rgba(255,253,223,0.7)',
+    },
+
+    historyInfoText: {
+        fontWeight: 'bold',
+        color: baseColor,
+    }
 });
 
 export default styles;

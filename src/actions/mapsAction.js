@@ -1,17 +1,19 @@
 import {
-    GET_CURRENT_POSTITION,
     FETCH_MARKERS_DETAILS,
     FETCH_ZONES,
     FETCH_SEARCH_FILTERS_DATA,
+    FETCH_HISTORY_DATA,
     RESET,
 } from '../constants';
-const BASE_URL = 'http://localhost:5000'; //192.168.1.120
-// const BASE_URL = 'http://10.0.2.2:5000'; //For Android
+import {Platform} from 'react-native';
 
-export const fetchZones = (onlyFirstRecord) => (dispatch) => {
+const BASE_URL = (Platform.OS === 'ios') ? 'http://localhost:5000' : 'http://10.0.2.2:5000'; //192.168.1.120
+
+
+export const fetchZones = (zoneName) => (dispatch) => {
     let url = `${BASE_URL}/api/maps/getZones`;
-    if(onlyFirstRecord) {
-        url = `${url}?firstRecord=${true}`;
+    if (zoneName) {
+        url = `${url}?zoneName=${zoneName}`;
     }
     fetch(url, {
         method: 'GET',
@@ -31,12 +33,31 @@ export const fetchZones = (onlyFirstRecord) => (dispatch) => {
         });
 };
 
+export const removeZone = (zoneName) => (dispatch) => {
+    let url = `${BASE_URL}/api/maps/removeZone?zoneName=${zoneName}`;
+    fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+        .then(resp => resp.json())
+        .then((data) => {
+            console.log(data.msg);
+            dispatch(fetchZones());
+        })
+        .catch(error => {
+            console.error(`OOPS unable to remove zone ${zoneName}`, error);
+        });
+};
+
 export const fetchMarkersData = (deviceId) => (dispatch) => {
-    //const url = 'https://jsonplaceholder.typicode.com/todos/1';\
+    //const url = 'https://jsonplaceholder.typicode.com/todos/1';
     let url = `${BASE_URL}/api/maps/getMarkers`;
     if(deviceId) {
         url += '?deviceId='+deviceId;
     }
+    console.log('fetchZones => ', url);
     fetch(url, {
         method: 'GET',
         headers: {
@@ -46,6 +67,9 @@ export const fetchMarkersData = (deviceId) => (dispatch) => {
         .then(resp => resp.json())
         .then((data) => {
             console.log("Data Received Markers Data =>", data);
+            /*const tmp = Number(Math.random().toFixed(2));
+            data[0].latitude = data[0].latitude - tmp;
+            data[0].longitude = data[0].longitude - tmp;*/
             dispatch({type:FETCH_MARKERS_DETAILS, markersData: data});
         })
         .catch(error => {
@@ -56,7 +80,6 @@ export const fetchMarkersData = (deviceId) => (dispatch) => {
 };
 
 export const fetchSearchFilterData = (filterText) => (dispatch) => {
-    //const url = 'https://jsonplaceholder.typicode.com/todos/1';
     const url = BASE_URL + '/api/maps/getSearchFilterData?filter='+filterText;
     fetch(url, {
         method: 'GET',
@@ -76,14 +99,14 @@ export const fetchSearchFilterData = (filterText) => (dispatch) => {
         });
 };
 
-export const storeZoneInfo = (zoneName, coordinates) => (dispatch) => {
-    //const url = 'https://jsonplaceholder.typicode.com/todos/1';
+export const storeZoneInfo = (zoneName, coordinates, zoneColor) => (dispatch) => {
     const url = BASE_URL + '/api/maps/storeZoneInfo';
     fetch(url, {
         method: 'POST',
         body: JSON.stringify({
           zoneName: zoneName,
-          coordinates: coordinates
+          coordinates: coordinates,
+          color: zoneColor,
         }),
         headers: {
             'Content-Type': 'application/json',
@@ -92,11 +115,34 @@ export const storeZoneInfo = (zoneName, coordinates) => (dispatch) => {
         .then(resp => resp.json())
         .then((data) => {
             console.log("Successfully store zone data =>", data);
+            dispatch(fetchZones());
         })
         .catch(error => {
             console.error("OOPS unable to store zone data.", error);
+        });
+};
+
+export const fetchHistoryData = (deviceId) => (dispatch) => {
+    let url = `${BASE_URL}/api/maps/getPolyLineHistory`;
+    if(deviceId) {
+        url += '?count=1000&deviceId='+ deviceId; //0356823035078075
+    }
+    console.log("URL =>", url);
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+        .then(resp => resp.json())
+        .then((data) => {
+            console.log("Data Received History Data =>", data);
+            dispatch({type:FETCH_HISTORY_DATA, payload: data});
+        })
+        .catch(error => {
+            console.error("OOPS unable to fetch History data.", error);
             const err = {isError: true, error:error };
-            // dispatch({type:STORE_ZONE_DATA, payload: err});
+            dispatch({type:FETCH_HISTORY_DATA, payload: err});
         });
 };
 

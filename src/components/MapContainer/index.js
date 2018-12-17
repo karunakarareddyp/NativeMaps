@@ -1,34 +1,48 @@
-import React, {PureComponent} from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import autobind from 'react-autobind';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Platform} from 'react-native';
 import {bindActionCreators} from 'redux';
-import MapView, { Marker, Polygon } from 'react-native-maps';
+import MapView, { Marker, Polygon, Polyline} from 'react-native-maps';
 import {getLatLongWithDeltas, getLatLongDeltaWithObject} from '../../utils/util';
 import {fetchMarkersData, fetchZones} from '../../actions/mapsAction';
+import avatar5 from '../../assets/images/avatar5.png'
+import ImageMarker from '../../utils/ImageMarker'
 
-class MapContainer extends PureComponent {
+class MapContainer extends Component {
     constructor(props) {
 		super(props);
         autobind(this);
 		this.state = {
             region: undefined,
-            //markersData: [],
+            polygonColor: undefined,
             polygons: [],
         };
 	}
 
 	componentWillMount(){
-        this.props.fetchZones(true);
+        this.props.fetchZones();
         this.props.fetchMarkersData();
         this.handleMarkersData();
     }
 
 	componentDidUpdate() {
-        if(!this.props.creatingZone && this.state.polygons.length) {
-            this.setState({polygons: []});
+        const {polygons, polygonColor} = this.state;
+        const {creatingZone} = this.props;
+        if(!creatingZone && polygons.length) {
+            this.setState({polygons: [], polygonColor: undefined});
         }
+        if(creatingZone && !polygonColor) {
+            this.setState({polygonColor: `rgba(${(Math.floor(Math.random() * 255))},${(Math.floor(Math.random() * 255))},${(Math.floor(Math.random() * 255))},0.2)`});
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if(nextProps.creatingZone && nextState.polygons.length <= 2) {
+            return false;
+        }
+        return true;
     }
 
     handleMarkersData(){
@@ -59,7 +73,7 @@ class MapContainer extends PureComponent {
             this.setState({
                 polygons
             });
-            this.props.selectedPolygons(polygons);
+            this.props.selectedPolygons(polygons, this.state.polygonColor);
         }
     }
 
@@ -72,40 +86,48 @@ class MapContainer extends PureComponent {
     }
 
     getRegion() {
-        const { selectedDevice, markersData } = this.props;
-        console.log(" selectedDevice =>", selectedDevice);
+        const { selectedDevice, markersData, historyData } = this.props;
+        const {polygons} = this.state;
+        if(polygons.length) {
+            return getLatLongDeltaWithObject(polygons);
+        }
+        if(selectedDevice && historyData && historyData.length) {
+            return getLatLongDeltaWithObject(historyData);
+        }
         if(selectedDevice && markersData && markersData.length === 1) {
             return getLatLongDeltaWithObject(markersData);
         }
         return this.getCurrentPosition();
     }
 
-    drawSystemZones() {
+    drawZones() {
         const {zonesData} = this.props;
         if( zonesData && zonesData.length) {
-            const zoneInfo = zonesData[0];
-            // console.log('zones info => ', zoneInfo);
-            return (<Polygon
-                key={zoneInfo.name}
-                coordinates={this.getZonesLatLng(JSON.parse(zoneInfo.plainPoints))}
-                strokeColor="#F00"
-                fillColor={zoneInfo.color}
-                strokeWidth={1}
-                options={{
-                    editable: true,
-                }}
-            />)
+            return zonesData.map(zone => {
+                return (<Polygon
+                    key={zone.name}
+                    coordinates={this.getZonesLatLng(JSON.parse(zone.plainPoints))}
+                    strokeColor="#F00"
+                    fillColor={zone.color}
+                    strokeWidth={1}
+                    options={{
+                        editable: true,
+                    }}
+                />)
+            })
         }
     }
 
-    drawPolygon(creatingZone) {
-        const {polygons} = this.state;
+    drawPolygon() {
+        const {creatingZone} = this.props;
+        const {polygons, polygonColor} = this.state;
         if(creatingZone && polygons.length > 2) {
             return (<Polygon
                 key={Math.random()}
                 coordinates={polygons}
                 strokeColor="#F00"
-                fillColor="rgba(0,128,0,0.5)"
+                //fillColor="rgba(0,128,0,0.2)"
+                fillColor={polygonColor}
                 strokeWidth={1}
                 options={{
                     editable: true,
@@ -121,28 +143,37 @@ class MapContainer extends PureComponent {
         if(markersData && markersData.length) {
             markers = markersData.map(marker => {
                 const coordinate = {latitude: Number(marker.latitude), longitude: Number(marker.longitude)};
+                const user = marker.userDetail[0];
                 return (<Marker.Animated
                     key={marker.deviceId}
+                    //image={avatar5}
                     coordinate={coordinate}
-                    title="Device Id"
-                    description={marker.deviceId}
-                />);
+                    title="Workmen Info"
+                    description={user ?
+                        `Name : ${user.lastName} ${user.firstName}\nDevice ID: ${marker.deviceId}\nZone: ${user.zone}\nUser ID: ${user.userId}`
+                        : marker.deviceId
+                    }
+                >
+                    <ImageMarker source={avatar5}/>
+                </Marker.Animated>);
             });
         }
         return markers;
     }
 
-	render () {
-        const { creatingZone } = this.props;
-        const mapOptions = {
-            scrollEnabled: true,
-        };
-
-        if (creatingZone) {
-            //mapOptions.scrollEnabled = false;
-            mapOptions.onPanDrag = e => this.onPress(e);
+    drawHistoryPolyLine() {
+        const {historyData} = this.props;
+        if(historyData && historyData.length) {
+           return (
+               <Polyline
+                   coordinates={historyData.map(obj => {return {latitude: obj.latitude, longitude: obj.longitude}})}
+                   strokeColor="#E75D40" // fallback for when `strokeColors` is not supported by the map-provider
+                   strokeWidth={4}
+            />);
         }
+    }
 
+	render () {
         return (
             <View style={styles.container}>
                 <MapView
@@ -155,12 +186,13 @@ class MapContainer extends PureComponent {
                     showsUserLocation={true}
                     showsCompass={true}
                     onPress={e => this.onPress(e)}
-                    {...mapOptions}
+                    scrollEnabled={true}
                     // onRegionChange={this.onRegionChange}
                     >
-                    {this.drawSystemZones()}
+                    {this.drawZones()}
                     {this.drawMarkers()}
-                    {this.drawPolygon(creatingZone)}
+                    {this.drawPolygon()}
+                    {this.drawHistoryPolyLine()}
                 </MapView>
             </View>
         );
@@ -177,13 +209,15 @@ const styles = StyleSheet.create({
 MapContainer.defaultProps = {
     zonesData: [],
     markersData: [],
+    historyData: [],
     selectedDevice: undefined
 };
 
 MapContainer.propTypes = {
     markersData: PropTypes.array,
     zonesData: PropTypes.array,
-    selectedDevice: PropTypes.number,
+    historyData: PropTypes.array,
+    selectedDevice: PropTypes.string,
     fetchZones: PropTypes.func.isRequired,
     fetchMarkersData: PropTypes.func.isRequired,
 };
@@ -191,6 +225,7 @@ MapContainer.propTypes = {
 const mapStateToProps = (state) => ({
     zonesData: state.main.zonesData,
     markersData: state.main.markersData,
+    historyData: state.main.historyData,
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({

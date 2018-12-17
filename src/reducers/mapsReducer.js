@@ -2,6 +2,7 @@ import {
     FETCH_ZONES,
     FETCH_MARKERS_DETAILS,
     FETCH_SEARCH_FILTERS_DATA,
+    FETCH_HISTORY_DATA,
     RESET,
 } from '../constants';
 
@@ -10,6 +11,7 @@ const initialState = {
     zonesData: [],
     markersData: [],
     searchFilterData: [],
+    historyData: [],
 };
 
 const ACTION_HANDLERS = {
@@ -27,7 +29,11 @@ const ACTION_HANDLERS = {
     }),
     [FETCH_SEARCH_FILTERS_DATA]: (state, action) => ({
         ...state,
-        searchFilterData: action.payload
+        searchFilterData: action.payload,
+    }),
+    [FETCH_HISTORY_DATA]: (state, action) =>({
+        ...state,
+        historyData: action.payload,
     }),
     [RESET]: () => (initialState),
 };

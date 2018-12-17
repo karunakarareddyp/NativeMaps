@@ -1,58 +1,104 @@
 import React, {PureComponent} from 'react';
 import {connect} from 'react-redux';
 import autobind from 'react-autobind';
-import {Keyboard, StyleSheet, Text, TouchableOpacity, View, Alert} from 'react-native';
-import {Container} from 'native-base'
+import {Keyboard} from 'react-native';
+import {Container, View, Text} from 'native-base'
 import {bindActionCreators} from 'redux';
 import MapContainer from './MapContainer';
 import SearchBox from "./SearchBox";
 import FooterContainer from "./common/FooterContainer";
-import {fetchSearchFilterData, fetchMarkersData, storeZoneInfo} from "../actions/mapsAction";
-import styles from './Styles';
-import PopupDialog from "../utils/PopupDialog";
+import {
+    fetchZones,
+    fetchSearchFilterData,
+    fetchMarkersData,
+    storeZoneInfo,
+    fetchHistoryData
+} from "../actions/mapsAction";
+import Styles from './Styles';
+import {FETCH_HISTORY_DATA} from '../constants';
+
+import ZoneView from "./zones/ZoneView";
 
 let filterTimeout;
 let zonePolygons;
+let zonePolygonColor;
+
+const initialState = {
+    selectedDevice: undefined,
+    viewType: 'home',
+    creatingZone: false,
+    displayPopup: false,
+    clearSearch: false,
+    displayHistoryInfo: false,
+};
 
 class Home extends PureComponent {
 	static navigationOptions = {
-		title: 'Tracking System'
+		title: 'Workmen Tracker'
 	};
 
 	constructor(props) {
 	    super(props);
         autobind(this);
-        this.state = {
-            selectedDevice: undefined,
-            viewType: 'home',
-            creatingZone: false,
-            displayPopup: false,
-        };
+        this.state = initialState
 	}
 
     onChangeSearch(txt) {
         console.log(txt);
         if(txt.length === 0) {
             this.setState({selectedDevice: undefined});
+            this.props.clearHistory();
         }
         clearTimeout(filterTimeout);
         filterTimeout = setTimeout(() => {this.props.fetchSearchFilterData(txt);}, 550)
     }
 
-    onSelectEmployee(selectedItem) {
+    onSelectEmployee(currentDevice) {
         Keyboard.dismiss();
-        this.props.fetchMarkersData(selectedItem.deviceId);
-        this.setState({
-            selectedDevice: selectedItem.deviceId,
-        });
+        const {selectedDevice, viewType} = this.state;
+        const {deviceId} = currentDevice;
+        if(selectedDevice !== deviceId) {
+            this.setState({
+                selectedDevice: deviceId,
+            });
+            this.props.fetchMarkersData(deviceId);
+            if(viewType === 'history') {
+                this.props.fetchHistoryData(deviceId);
+            }
+        }
     }
 
     onClickFooterTab(viewType) {
-	    if(this.state.viewType !== viewType) {
+	    const prevViewType = this.state.viewType;
+	    if(prevViewType !== viewType) {
             this.setState({
                 viewType,
                 creatingZone: false,
-            })
+                clearSearch: (viewType === 'home'),
+            });
+            if(viewType === 'zones') {
+                this.props.fetchZones();
+            }
+            if(prevViewType === 'history'){
+                this.setState({displayHistoryInfo: false});
+                this.props.clearHistory();
+            }
+            const {selectedDevice} = this.state;
+            if(viewType === 'history') {
+                if(selectedDevice) {
+                    this.setState({displayHistoryInfo: false});
+                    this.props.fetchHistoryData(selectedDevice);
+                } else {
+                    this.setState({displayHistoryInfo: true});
+                }
+            }
+            if(viewType === 'home') {
+                this.setState({
+                    clearSearch: true
+                });
+                setTimeout(() => this.setState(initialState), 10);
+                this.props.fetchZones();
+            }
         }
     }
 
@@ -75,16 +121,17 @@ class Home extends PureComponent {
             creatingZone: false,
             displayPopup: false,
         });
-	    this.props.storeZoneInfo(zoneName, zonePolygons);
+	    this.props.storeZoneInfo(zoneName, zonePolygons, zonePolygonColor);
     }
 
-    selectedPolygons(polygons) {
+    selectedPolygons(polygons, polygonColor) {
         zonePolygons = polygons;
+        zonePolygonColor = polygonColor;
     }
 
 	render(){
 	    const {geoPosition, searchFilterData} = this.props;
-	    const {viewType, creatingZone, selectedDevice, displayPopup} = this.state;
+	    const {viewType, creatingZone, selectedDevice, displayPopup, clearSearch, displayHistoryInfo} = this.state;
 		return(
 			<Container style={{flex: 1}}>
                 <MapContainer
@@ -96,35 +143,22 @@ class Home extends PureComponent {
                 <SearchBox
                     onChangeSearch={this.onChangeSearch}
                     searchFilterData={searchFilterData}
-                    onSelectEmployee={this.onSelectEmployee}/>
-                {
-                    viewType === 'zones' ?
-                        (<View style={styles.buttonContainer}>
-                            {!creatingZone ?
-                                (<TouchableOpacity
-                                    onPress={() => this.onCreateZone()}
-                                    style={[styles.bubble, styles.button]}
-                                >
-                                    <Text style={styles.buttonText}>Create Zone</Text>
-                                </TouchableOpacity>) :
-                                (<View style={{flexDirection: 'row'}}><TouchableOpacity
-                                    onPress={() => this.onClearZone()}
-                                    style={[styles.bubble, styles.button]}
-                                >
-                                    <Text style={styles.buttonText}>Clear Zone</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={() => this.onFinishZone()}
-                                    style={[styles.bubble, styles.button]}
-                                >
-                                    <Text style={styles.buttonText}>Save Zone</Text>
-                                </TouchableOpacity></View>)
-                            }
-
-                        </View>) : null
-                }
-                {displayPopup ? <PopupDialog onSubmitZone={this.onSubmitZone}/> : null}
+                    clearSearch={clearSearch}
+                    onSelectEmployee={this.onSelectEmployee}
+                />
+                <ZoneView
+                    viewType={viewType}
+                    creatingZone={creatingZone}
+                    displayPopup={displayPopup}
+                    onCreateZone={this.onCreateZone}
+                    onClearZone={this.onClearZone}
+                    onFinishZone={this.onFinishZone}
+                    onSubmitZone={this.onSubmitZone}
+                />
+                {displayHistoryInfo && !selectedDevice ?
+                    (<View style={Styles.historyInfo}>
+                        <Text style={Styles.historyInfoText}>&#9432; - Select employee to see the history.</Text>
+                    </View>): null}
                 <FooterContainer onClickFooterTab={this.onClickFooterTab}/>
 			</Container>
 		);
@@ -134,13 +168,17 @@ class Home extends PureComponent {
 
 const mapStateToProps = (state) => ({
     geoPosition: state.main.geoPosition,
-    searchFilterData: state.main.searchFilterData
+    searchFilterData: state.main.searchFilterData,
+    historyData: state.main.historyData,
 });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
+    fetchZones,
     fetchSearchFilterData,
     fetchMarkersData,
     storeZoneInfo,
+    fetchHistoryData,
+    clearHistory: () => dispatch({type: FETCH_HISTORY_DATA})
 },dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps) (Home);

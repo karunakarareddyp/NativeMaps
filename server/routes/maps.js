@@ -12,20 +12,10 @@ router.get('/me', (req, res) => res.json({
 
 router.get('/getMarkers', (req, res) => {
     const deviceId = req.query.deviceId;
-    model.Markers.aggregate([
-        {"$sort": {"pingtime": -1}},
-        { "$group": {
-                "_id": {
-                    "deviceId": deviceId ? deviceId : "$deviceId",
-                },
-                "deviceId": { "$first": "$deviceId"},
-                "pingtime": { "$first": "$pingtime" },
-                "latitude": { "$first": "$latitude"},
-                "longitude": { "$first": "$longitude"}
-            }
-        },
-    ], (err, markers) => {
+    console.log('Device ID ', deviceId);
+    model.Markers.aggregate(getMarkersQuery(deviceId), (err, markers) => {
         if (err) res.send(err);
+        console.log("Markers =>", markers);
         res.send(markers);
     })
 });
@@ -33,7 +23,6 @@ router.get('/getMarkers', (req, res) => {
 router.get('/getAlerts', (req, res) => {
     model.Alerts.find({ }, (err, alerts) => {
         if (err) res.send(err);
-        console.log('Tracing Alerts Data =>', alerts);
         res.send(alerts);
     });
 });
@@ -49,35 +38,37 @@ router.get('/getSearchFilterData', (req, res) => {
         ]},
         (err, users) => { // i - indicates case in-sensitive
             if (err) res.send(err);
-            console.log('Filter Users Data =>', users);
             res.send(users);
         });
 });
 
 router.get('/getZones', (req, res) => {
-    const onlyFirstRecord = req.query.firstRecord;
-    model.Zones.find({}, (error, zones) => {
+    const {zoneName} = req.query;
+    const query = zoneName ? {name: zoneName} : {};
+    model.Zones.find(query, (error, zones) => {
         if (error) res.send(error);
-        console.log('Zones  =>', zones);
-        let op = zones;
-        if(onlyFirstRecord && zones && zones.length) {
-            op = [zones[0]]
-        }
-        res.send(op);
+        res.send(zones);
     });
 
 });
 
+router.put('/removeZone', (req, res) => {
+    const {zoneName} = req.query;
+    model.Zones.deleteOne({name: zoneName}, (error) => {
+        if (error) res.send(error);
+        res.send({msg: `Successfully deleted zone ${zoneName}`});
+    })
+});
+
 router.post('/storeZoneInfo', (req, res) => {
-    const zoneName = req.body.zoneName;
-    const coordinates = req.body.coordinates;
+    const {zoneName, coordinates, color} = req.body;
     console.log("Request Body =>", req.body);
     const points = coordinates.map((point) => [point.latitude, point.longitude]);
     const zoneData = new model.Zones({
         _id: Math.floor(Math.random()*1000000),
         name: zoneName,
         plainPoints:JSON.stringify(points),
-        color: "green"
+        color: color
     });
     zoneData.save()
         .then(status => {
@@ -90,6 +81,75 @@ router.post('/storeZoneInfo', (req, res) => {
         });
 
 });
+
+router.get('/getPolyLineHistory', (req, res) => {
+    const {top, deviceId} = req.query;
+    model.Markers
+        .find({deviceId: deviceId})
+        .sort({'pingtime': -1})
+        .limit(top?top : 100)
+        .exec((error, history) => {
+            if (error) res.send(error);
+            console.log('history  =>', history);
+            res.send(history);
+        });
+});
+
+function getMarkersQuery(deviceId) {
+    let query;
+    if(deviceId) {
+        query = [
+            { $sort: {"pingtime": -1}},
+            { $match: {"deviceId": deviceId}},
+            { $group: {
+                    "_id": {
+                        "deviceId": "$deviceId",
+                    },
+                    "deviceId": { "$first": "$deviceId"},
+                    "pingtime": { "$first": "$pingtime" },
+                    "latitude": { "$first": "$latitude"},
+                    "longitude": { "$first": "$longitude"}
+                }
+            },
+            {
+                $lookup:
+                    {
+                        from: "users",
+                        localField: "deviceId",
+                        foreignField: "deviceId",
+                        as: "userDetail"
+                    }
+            },
+            {$match: {details: {$ne: []}}},
+        ];
+    } else {
+        query = [
+            { $sort: {"pingtime": -1}},
+            { $group: {
+                    "_id": {
+                        "deviceId": "$deviceId",
+                    },
+                    "deviceId": { "$first": "$deviceId"},
+                    "pingtime": { "$first": "$pingtime" },
+                    "latitude": { "$first": "$latitude"},
+                    "longitude": { "$first": "$longitude"}
+                }
+            },
+            {
+                $lookup:
+                    {
+                        from: "users",
+                        localField: "deviceId",
+                        foreignField: "deviceId",
+                        as: "userDetail"
+                    }
+            },
+            {$match: {details: {$ne: []}}},
+        ];
+    }
+    return query;
+}
+
 module.exports = router;
 
 /*

@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const MarkersSchema = new Schema({
     _id: Object,
-    deviceId: Number,
+    deviceId: String,
     latitude: Number,
     longitude: Number,
     pingTime: Date,
@@ -15,7 +15,7 @@ const ZonesSchema = new Schema({
     _id: Number,
     name: String,
     color: String,
-    deviceId: Number,
+    deviceId: String,
     points: String,
     plainPoints: String,
 });
@@ -25,7 +25,7 @@ const UsersSchema = new Schema({
     firstName: String,
     lastName: String,
     userId: String,
-    deviceId: Number,
+    deviceId: String,
     zones: [
         { type: mongoose.Schema.ObjectId, ref: 'zones' }
     ]
@@ -33,18 +33,10 @@ const UsersSchema = new Schema({
 const Users = mongoose.model('users', UsersSchema);
 
 const AlertsSchema = new Schema({
-    employeeId: {
-        type: String,
-        required: true,
-    },
-    latitude: {
-        type: Number,
-        required: true,
-    },
-    longitude: {
-        type: Number,
-        required: true,
-    },
+    deviceId: String,
+    latitude: Number,
+    longitude: Number,
+    message: String,
 });
 const Alerts = mongoose.model('alerts', AlertsSchema);
 

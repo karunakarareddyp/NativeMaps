@@ -16,6 +16,12 @@ class SearchBox extends PureComponent {
         };
     }
 
+    componentDidUpdate() {
+        if(this.props.clearSearch) {
+            this.setState({selectedObject: ''});
+        }
+    }
+
     onSearchChange(txt) {
         //const filterList = this.state.ds.filter(data => data.name.toLowerCase().indexOf(txt.toLowerCase()) > -1);
         this.setState({
